@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Control panel</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript">
+
+    //画面構築完了後
+    $(function() {
+      var POLLLING_INVERVAL_TIME_IN_MILLIS = 1000;//10s
+        var order_number = 0;
+        var repeat = 0;
+      (function polling() {
+      if(!document.hidden) {
+        getStatus();}
+        window.setTimeout(polling, POLLLING_INVERVAL_TIME_IN_MILLIS);
+      }());
+        function getStatus() {
+            $.getJSON("orderlist", function(json){
+                repeat = repeat + 1
+                if(json != order_number && repeat > 1){
+                    console.log("Detect");
+                    location.reload();
+                }else{
+                    console.log("Pass");
+                }
+                order_number=json;
+            });
+    }});
+
+    </script>
+
+    <style type="text/css">
+        body,td,th,input,h1 {
+            font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+            font-style: normal;
+            font-weight: bold;
+            color: #000000;
+            background: #ffffff;
+            padding: 5px
+        }
+
+        #drink {
+            font-size: 12px;
+            background: #f0ffff;
+            width: 100px;
+        }
+
+        #order {
+            text-align: center;
+            font-weight: normal;
+        }
+
+        #order2 {
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #order3 {
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            background: #999999;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>ご注文確認画面</h1>
+<table border="1" id="tbl">
+    <tr id="top">
+        <th width="150px">発注時間</th>
+        <th width="150px">ユーザID</th>
+        <th width="100px">会議室</th>
+        {% for item in menu %}
+            <th id="drink">{{ item }}</th>
+        {% endfor %}
+        <th width="80px">注文完了</th>
+    </tr>
+        {% for order in orders %}
+        <tr>
+            {%  for item in order.item %}
+                {% if loop.index > 3 %}
+                    <td id="order2">{{ item }}</td>
+                {% else %}
+                    <td id="order">{{ item }}</td>
+                {% endif %}
+            {% endfor %}
+                <td id="order"><a href="{{ url_for(endpoint='ordercomplete') }}?orderid={{ order.link }}"><img src="{{ url_for('static', filename='dis.gif') }}"></a></td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3" id="order3">合計</td>
+            {%  for item in total %}
+                <td id="order3">{{ item }}</td>
+            {% endfor %}
+            <td id="order3"></td>
+        </tr>
+
+</table>
+
+</body>
+</html>
