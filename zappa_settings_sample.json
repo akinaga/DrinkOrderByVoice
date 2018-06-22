@@ -1,0 +1,15 @@
+{
+    "dev": {
+        "app_function": "orderbyvoice.app",
+        "aws_region": "ap-northeast-1", 
+        "profile_name": "default", 
+        "project_name": "DrinkOrderByVoice",
+        "runtime": "python2.7", 
+        "s3_bucket": "YOUR OWN BACKET",
+        "timeout_seconds": 30,
+        "vpc_config": {
+            "SubnetIds": [ "YOUR OWN SUBNET ID" ],
+            "SecurityGroupIds": [ "YOUR OWN SECURITY GROUP" ]
+        }
+    }
+}
