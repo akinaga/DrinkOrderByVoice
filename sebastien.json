@@ -1,0 +1,62 @@
+[
+  {
+    "name": "order",
+    "utterances": [
+      "*を注文",
+      "*を*",
+      "*をお願い",
+      "@order @個数 ",
+      "@order ",
+      "@個数 "
+    ],
+    "goodbye_message": "",
+    "action_mode": "pass_through",
+    "action_endpoint": "https://10m6dlgwu0.execute-api.ap-northeast-1.amazonaws.com/dev/order",
+    "action_text": "",
+    "slots": [
+      {
+        "required": true,
+        "name": "drink",
+        "default": "",
+        "reflective_sentence": "ご注文は何にしますか？",
+        "entity": [
+          "@order"
+        ]
+      },
+      {
+        "required": true,
+        "name": "number",
+        "default": "",
+        "reflective_sentence": "個数を教えてください。",
+        "entity": [
+          "@個数"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "menu",
+    "utterances": [
+      "何が注文できる",
+      "*飲める",
+      "何が*"
+    ],
+    "goodbye_message": "",
+    "action_mode": "pass_through",
+    "action_endpoint": "https://10m6dlgwu0.execute-api.ap-northeast-1.amazonaws.com/dev/order",
+    "action_text": "",
+    "slots": []
+  },
+  {
+    "name": "thanks",
+    "utterances": [
+      "ありがとう",
+      "いらない"
+    ],
+    "goodbye_message": "ご利用ありがとうございました",
+    "action_mode": "pass_through",
+    "action_endpoint": "https://10m6dlgwu0.execute-api.ap-northeast-1.amazonaws.com/dev/order",
+    "action_text": "",
+    "slots": []
+  }
+]
