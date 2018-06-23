@@ -20,6 +20,7 @@ menu = []
 for item in menu_json:
     menu.append(item["value"])
 
+
 # ------------ Webサービスの処理
 @app.route('/')
 def main():
@@ -55,6 +56,7 @@ def main():
         total=total)
 
 
+# オーダーの削除
 @app.route('/ordercomplete')
 def ordercomplete():
     if request.args.get('orderid'):
@@ -67,6 +69,7 @@ def ordercomplete():
     return redirect(url_for('main'))
 
 
+# オーダーの変化検出用
 @app.route('/orderlist')
 def orderlist():
     number = r.llen("order")
@@ -74,19 +77,21 @@ def orderlist():
 
 
 # ---------------- ここからは音声処理
+# エンドポイントの受付処理
 @app.route('/order', methods=['GET', 'POST'])
 def order():
     if request.method == 'POST' and 'application/json' in request.headers.get('Content-Type', ""):
         event = request.json
         response = make_response()
         response.status_code = 200
-        response.data = event_handler2(event, "")
+        response.data = event_handler(event, "")
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
     else:
         return "Error"
 
 
+# Redisへの書き込み
 def put_drink_order(user_id, drinkorder, confirm, ittr):
     r.set(user_id, json.dumps({
         "drinkorder": drinkorder,
@@ -95,6 +100,7 @@ def put_drink_order(user_id, drinkorder, confirm, ittr):
     }))
 
 
+# テキスト処理
 def txt_in_txt(list, target, mark):
     result = None
     for txt in list:
@@ -103,12 +109,15 @@ def txt_in_txt(list, target, mark):
     return result
 
 
-def event_handler2(event, context):
+# イベントハンドラ
+def event_handler(event, context):
     print(json.dumps(event, ensure_ascii=False, indent=2, encoding='utf-8'))
 
     intent = event["args"]["intent"]
     utterance = event["args"]["utterance"]
     user_id = event["user_id"]
+
+    # エンドポイントテスト用
     if user_id == "test":
         return respond(
             None,
@@ -134,6 +143,7 @@ def event_handler2(event, context):
     ittr = 0
     talkend = "false"
 
+    # この時点でのオーダーの解析
     if items.get('drinkorder'):
         drinkorder = items.get('drinkorder')
         if drinkorder is None:
@@ -143,14 +153,17 @@ def event_handler2(event, context):
         if ittr is None:
             ittr = 0
 
+    # Sebastienからのオーダーの受け取り
     items = {}
     if intent == "init":
         # オーダー初期化
         put_drink_order(user_id, {}, 0, 0)
 
+    # メニュー確認
     elif intent == "menu":
         sentense = u"ご用意できるのは、" + u"、".join(menu) + u"です。ご注文をどうぞ。"
 
+    # ドリンクオーダの解析
     elif intent == "order":
         sentense = u""
         drinks = event["args"].get('drink')
@@ -172,10 +185,12 @@ def event_handler2(event, context):
         put_drink_order(user_id, drinkorder, 0, ittr)
 
     else:
+        # オーダー間違い
         if u"違" in utterance or u"いいえ" or u"あってません" or u"あってない" in utterance:
             sentense = u"ご注文内容を最初からもう一度お願いします。"
             put_drink_order(user_id, {}, 0, ittr)
 
+        # オーダー完了
         elif (u"以上" in utterance or u"願" in utterance or u"はい" in utterance or u"あってます" in utterance) and (confirm == 1 or ittr == 1):
             current_order_number = r.llen("order") + 1
             sentense = u"ご注文を承りました。" + str(current_order_number * 3) + u"分でお届けします。では失礼します。"
@@ -188,6 +203,7 @@ def event_handler2(event, context):
             }))
             put_drink_order(user_id, {}, 0, ittr)
 
+        # オーダー再確認
         elif (u"以上" in utterance or u"はい" in utterance or u"願" in utterance) and confirm == 0:
             orders = []
             for order in drinkorder.keys():
@@ -197,8 +213,6 @@ def event_handler2(event, context):
 
         else:
             sentense = u"ご注文をどうぞ"
-
-    print(drinkorder)
 
     return respond(
         None,
@@ -212,6 +226,7 @@ def event_handler2(event, context):
                     }
          }
     )
+
 
 def respond(err, res=None):
     return json.dumps(res)
