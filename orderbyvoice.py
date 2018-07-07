@@ -85,6 +85,7 @@ def order():
         response = make_response()
         response.status_code = 200
         response.data = event_handler(event, "")
+        print(response.data)
         response.headers['Content-Type'] = 'application/json; charset=utf-8'
         return response
     else:
@@ -139,6 +140,7 @@ def event_handler(event, context):
 
     drinkorder = {}
     sentense = ""
+    system_utterance = ""
     confirm = 0
     ittr = 0
     talkend = "false"
@@ -162,6 +164,7 @@ def event_handler(event, context):
     # メニュー確認
     elif intent == "menu":
         sentense = u"ご用意できるのは、" + u"、".join(menu) + u"です。ご注文をどうぞ。"
+        system_utterance = u"ご用意できるのは、" + u"、".join(menu) + u"です。ご注文をどうぞ。"
 
     # ドリンクオーダの解析
     elif intent == "order":
@@ -186,7 +189,7 @@ def event_handler(event, context):
 
     else:
         # オーダー間違い
-        if u"違" in utterance or u"いいえ" or u"あってません" or u"あってない" in utterance:
+        if u"違" in utterance or u"いいえ" in utterance or u"あってません" in utterance or u"あってない" in utterance:
             sentense = u"ご注文内容を最初からもう一度お願いします。"
             put_drink_order(user_id, {}, 0, ittr)
 
@@ -214,6 +217,9 @@ def event_handler(event, context):
         else:
             sentense = u"ご注文をどうぞ"
 
+    if system_utterance == "":
+        system_utterance = sentense
+
     return respond(
         None,
         {"error_code": "success",
@@ -222,6 +228,9 @@ def event_handler(event, context):
          "bot_id": event["bot_id"],
          "params": {"status": "true",
                     "message": sentense,
+                    "option": {
+                        "readText": system_utterance
+                    },
                     "talkend": talkend,
                     }
          }
